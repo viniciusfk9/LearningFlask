@@ -58,7 +58,7 @@ def load_user(user_id):
 @app.route("/account")
 @login_required
 def account():
-    return "You are logged in"
+    return render_template("account.html")
 
 
 @app.route("/register", methods=["POST"])
@@ -78,6 +78,11 @@ def register():
 
     return redirect(url_for('home'))
 
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
