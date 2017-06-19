@@ -30,7 +30,11 @@ input[type="submit"]:hover {
     float: left;
 }
 
-#newcrimeform {
+#new_crime_form {
     float: right;
     width: 25%;
+}
+
+#error {
+    color: red;
 }
