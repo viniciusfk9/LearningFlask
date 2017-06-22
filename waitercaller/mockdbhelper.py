@@ -8,7 +8,7 @@ MOCK_USERS = [{"email": "test@example.com",
 
 MOCK_TABLES = [{"_id": "1",
                 "number": "1",
-                "owner":"test@example.com",
+                "owner": "test@example.com",
                 "url": "mockurl"}]
 
 MOCK_REQUESTS = [{
