@@ -95,7 +95,8 @@ def register():
 
         return render_template("home.html", loginform=LoginForm(),
                                registrationform=form,
-                               onloadmessage="Registration successful. Please log in.")
+                               onloadmessage=
+                               "Registration successful. Please log in.")
 
     return render_template("home.html", loginform=LoginForm(),
                            registrationform=form)
@@ -118,9 +119,9 @@ def dashboard():
 def account_createtable():
     form = CreateTableForm(request.form)
     if form.validate():
-        tableid = DB.add_table(form.tablenumber.data, current_user.get_id())
-        new_url = BH.shorten_url(config.base_url + "newrequest/" + str(tableid))
-        DB.update_table(tableid, new_url)
+        table_id = DB.add_table(form.tablenumber.data, current_user.get_id())
+        new_url = BH.shorten_url(config.base_url + "newrequest/" + str(table_id))
+        DB.update_table(table_id, new_url)
 
         return redirect(url_for('account'))
     return render_template("account.html", createtableform=form,
