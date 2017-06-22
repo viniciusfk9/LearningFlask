@@ -16,9 +16,13 @@ from bitlyhelper import BitlyHelper
 from forms import CreateTableForm
 from forms import LoginForm
 from forms import RegistrationForm
-from mockdbhelper import MockDBHelper as DBHelper
 from passwordhelper import PasswordHelper
 from user import User
+
+if config.test:
+    from mockdbhelper import MockDBHelper as DBHelper
+else:
+    from dbhelper import DBHelper
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
@@ -78,7 +82,7 @@ def account():
 @app.route("/register", methods=["POST"])
 def register():
     form = RegistrationForm(request.form)
-    print form.email
+
     if form.validate():
         if DB.get_user(form.email.data):
             form.email.errors.append("Email address already registered")
@@ -115,7 +119,7 @@ def account_createtable():
     form = CreateTableForm(request.form)
     if form.validate():
         tableid = DB.add_table(form.tablenumber.data, current_user.get_id())
-        new_url = BH.shorten_url(config.base_url + "newrequest/" + tableid)
+        new_url = BH.shorten_url(config.base_url + "newrequest/" + str(tableid))
         DB.update_table(tableid, new_url)
 
         return redirect(url_for('account'))
