@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+import uuid
 
 # create a new SQLAlchemy object
 db = SQLAlchemy()
@@ -22,10 +23,27 @@ class Topics(Base):
     def __repr__(self):
         return self.title
 
+    def to_json(self):
+        return {
+            'title': self.title,
+            'options':
+                [{'name': option.option.name, 'vote_count': option.vote_count}
+                 for option in self.options.all()]
+        }
+
 
 class Options(Base):
     """ Model for poll options """
-    name = db.Column(db.String(200))
+    name = db.Column(db.String(200), unique=True)
+
+    def __repr__(self):
+        return self.name
+
+    def to_json(self):
+        return {
+            'id': uuid.uuid4(),  # Generates a random uuid
+            'name': self.name
+        }
 
 
 class Polls(Base):
@@ -53,3 +71,6 @@ class Users(Base):
     email = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(200))
+
+    def __repr__(self):
+        return self.username
