@@ -19,6 +19,11 @@ def home():
     return render_template('index.html')
 
 
+@votr.route('/polls')
+def polls():
+    return render_template('polls.html')
+
+
 @votr.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
