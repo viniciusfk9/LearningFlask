@@ -1,7 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
-dbconfig.py
-*.pyc
-
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -22,8 +19,9 @@ dbconfig.py
 
 .idea/misc.xml
 .idea/modules.xml
-.idea/crimemap.iml
-.idea/*
+.idea/firstapp.iml
+.idea/codeStyleSettings.xml
+.idea/vcs.xml
 
 # Gradle:
 .idea/**/gradle.xml
@@ -51,6 +49,7 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
