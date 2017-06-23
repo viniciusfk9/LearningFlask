@@ -1,0 +1,55 @@
+from flask_sqlalchemy import SQLAlchemy
+
+# create a new SQLAlchemy object
+db = SQLAlchemy()
+
+
+class Base(db.Model):
+    """ Base model that for other models to inherit from """
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(),
+                              onupdate=db.func.current_timestamp())
+
+
+class Topics(Base):
+    """ Model for poll topics """
+    title = db.Column(db.String(500))
+
+    # User friendly way to display the object
+    def __repr__(self):
+        return self.title
+
+
+class Options(Base):
+    """ Model for poll options """
+    name = db.Column(db.String(200))
+
+
+class Polls(Base):
+    """ Polls model to connect topics and options together """
+
+    # Columns declaration
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
+    option_id = db.Column(db.Integer, db.ForeignKey('options.id'))
+    vote_count = db.Column(db.Integer, default=0)
+    status = db.Column(db.Boolean)  # to mark poll as open or closed
+
+    # Relationship declaration (makes it easier for us to access the polls model
+    # from the other models it's related to)
+    topic = db.relationship('Topics', foreign_keys=[topic_id],
+                            backref=db.backref('options', lazy='dynamic'))
+    option = db.relationship('Options', foreign_keys=[option_id])
+
+    def __repr__(self):
+        # A user friendly way to view our objects in the terminal
+        return self.option.name
+
+
+class Users(Base):
+    """ Model to store user details """
+    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(50), unique=True)
+    password = db.Column(db.String(200))
