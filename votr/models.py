@@ -1,3 +1,5 @@
+import uuid
+
 from flask_sqlalchemy import SQLAlchemy
 
 # create a new SQLAlchemy object
@@ -17,15 +19,35 @@ class Base(db.Model):
 class Topics(Base):
     """ Model for poll topics """
     title = db.Column(db.String(500))
+    status = db.Column(db.Boolean,
+                       default=1)  # to mark poll as open or closed should be under title not polls
 
     # User friendly way to display the object
     def __repr__(self):
         return self.title
 
+    def to_json(self):
+        return {
+            'title': self.title,
+            'options':
+                [{'name': option.option.name, 'vote_count': option.vote_count}
+                 for option in self.options.all()],
+            'status': self.status
+        }
+
 
 class Options(Base):
     """ Model for poll options """
-    name = db.Column(db.String(200))
+    name = db.Column(db.String(200), unique=True)
+
+    def __repr__(self):
+        return self.name
+
+    def to_json(self):
+        return {
+            'id': uuid.uuid4(),  # Generates a random uuid
+            'name': self.name
+        }
 
 
 class Polls(Base):
