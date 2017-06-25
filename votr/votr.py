@@ -1,12 +1,30 @@
+from celery import Celery
 from flask import Flask, render_template, request, flash, session, redirect, \
-    url_for, jsonify
+    url_for
 from flask_admin import Admin
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import config
 from admin import AdminView, TopicView
 from api.api import api
-from models import db, Users, Polls, Topics, Options, UserPolls
+from models import db, Users, Polls, Topics, Options
+
+
+def make_celery(app):
+    celery = Celery(app.import_name, broker=config.CELERY_BROKER)
+    celery.conf.update(votr.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+
+    return celery
 
 votr = Flask(__name__)
 
@@ -20,6 +38,9 @@ db.init_app(votr)
 db.create_all(app=votr)
 
 migrate = Migrate(votr, db, render_as_batch=True)
+
+# create celery object
+celery = make_celery(votr)
 
 admin = Admin(votr, name='Dashboard', index_view=TopicView(
     Topics, db.session, url='/admin', endpoint='admin'))
