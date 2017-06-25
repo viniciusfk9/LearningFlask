@@ -152,40 +152,44 @@ var LivePreview = React.createClass({
   },
 
   render: function(){
-    var options = this.props.options.map(function(option){
+  var options = this.props.options.map(function(option){
 
-      if(option.name) {
+    if(option.name) {
 
-        // calculate progress bar percentage
-        var progress = Math.round((option.vote_count / this.props.total_vote_count) * 100) || 0
+      // calculate progress bar percentage
+      var progress = Math.round((option.vote_count / this.props.total_vote_count) * 100) || 0
+      var current = {width: progress+"%"}
 
-        return (
-          <div key={option.name}>
-            <input name="options" type="radio" value={option.name} onChange={this.handleOptionChange} /> {option.name}
-            <br />
-            <progress value={progress} max="100"></progress><small style={progressText}>{progress}%</small>
-            <br />
-          </div>
-        );
-      }
-    }.bind(this));
-
-    return(
-      <div className="col-sm-6">
-        <div className="panel panel-success">
-          <div className="panel-heading">
-            <h4>{this.props.title}</h4>
-          </div>
-          <div className="panel-body">
-            <form onSubmit={this.voteHandler}>
-              {options}
-              <br />
-              <button type="submit" disabled={this.state.disabled} className="btn btn-success btn-outline hvr-grow">Vote!</button> <small>{this.props.total_vote_count} votes so far</small>
-            </form>
+      return (
+        <div key={option.name}>
+          <input name="options" type="radio" value={option.name} onChange={this.handleOptionChange} /> {option.name}
+          <div className="progress">
+            <div className="progress-bar progress-bar-success" role="progressbar" aria-valuenow={progress}
+            aria-valuemin="0" aria-valuemax="100" style={current}>
+              {progress}%
+            </div>
           </div>
         </div>
+      );
+    }
+  }.bind(this));
+
+    return(
+
+  <div className={this.props.classContext}>
+    <div className="panel panel-success">
+      <div className="panel-heading">
+        <h4>{this.props.title}</h4>
       </div>
-    )
+      <div className="panel-body">
+        <form onSubmit={this.voteHandler}>
+          {options}
+          <br />
+          <button type="submit" disabled={this.state.disabled} className="btn btn-success btn-outline hvr-grow">Vote!</button> <small>{this.props.total_vote_count} votes so far</small>
+        </form>
+      </div>
+    </div>
+  </div> )
   }
 });
 
@@ -219,12 +223,18 @@ var LivePreviewProps = React.createClass({
   render: function(){
     var polls = this.props.polls.Polls.map(function(poll){
       return (
-        <LivePreview key={poll.title} title={poll.title} options={poll.options} total_vote_count={poll.total_vote_count} voteHandler={this.voteHandler} />
+        <LivePreview key={poll.title} title={poll.title} options={poll.options}
+        total_vote_count={poll.total_vote_count} voteHandler={this.voteHandler}
+        classContext={this.props.classContext} />
     );
   }.bind(this));
 
-    return (
-      <div className="row marketing">{polls}</div>
+     return (
+      <div>
+        <h1 style={Align}>{this.props.header}</h1>
+        <br />
+        <div className="row">{polls}</div>
+      </div>
     );
   }
 });
@@ -245,7 +255,7 @@ var AllPolls = React.createClass({
 
     } else {
         var url = origin + '/api/polls'
-        this.setState({header: 'Latest polls', classContext: 'col-sm-6'})
+        this.setState({header: '', classContext: 'col-sm-6'})
     }
 
     //make get request
@@ -270,10 +280,10 @@ var AllPolls = React.createClass({
 
     // if a message was returned in the json result (the poll wasn't found)
     if(!this.state.polls.message){
-    return (
-      <LivePreviewProps polls={this.state.polls} loadPollsFromServer={this.loadPollsFromServer}
-      header={this.state.header} classContext={this.state.classContext} />
-      );
+        return (
+            <LivePreviewProps polls={this.state.polls} loadPollsFromServer={this.loadPollsFromServer}
+                header={this.state.header} classContext={this.state.classContext} />
+        );
     } else {
       return (
           <div style={Align}>
