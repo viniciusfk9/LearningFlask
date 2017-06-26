@@ -4,84 +4,107 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="http://getbootstrap.com/favicon.ico">
 
-    <title>Narrow Jumbotron Template for Bootstrap</title>
+    <title>Votr!</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for("static", filename="css/bootstrap.min.css") }}" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <link href="{{ url_for('static', filename='css/ie10-viewport-bug-workaround.css') }}" rel="stylesheet">
+    <link href="{{ url_for("static", filename="css/ie10-viewport-bug-workaround.css") }}" rel="stylesheet">
+
+    <!-- React JS -->
+    <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+    <script src="https://npmcdn.com/react-router@2.8.1/umd/ReactRouter.min.js"></script>
+    <script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='js/polls.js') }}"></script>
 
     <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='css/jumbotron-narrow.css') }}" rel="stylesheet">
+    <link href="{{ url_for("static", filename="css/jumbotron-narrow.css") }}" rel="stylesheet">
 
-    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-    <script src="{{ url_for('static', filename='js/ie-emulation-modes-warning.js') }}"></script>
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <script src="{{ url_for("static", filename="js/ie-emulation-modes-warning.js") }}"></script>
   </head>
 
   <body>
-
-    <div class="container">
-      <div class="header clearfix">
-        <nav>
+        <nav class="navbar navbar-default navbar-fixed-top">
           <ul class="nav nav-pills pull-right">
-            <li role="presentation" class="active"><a href="index.html#">Home</a></li>
-            <li role="presentation"><a href="index.html#">About</a></li>
-            <li role="presentation"><a href="index.html#">Contact</a></li>
+            {% if session.get('user') %}
+            <li class="welcome-message">Hey {{ session['user']}}!</li>
+              <li role="presentation"><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% endif %}
+            <li role="presentation"><a href="/polls">Polls</a></li>
+            <li role="presentation"><a href="https://github.com/danidee10/Votr">Github</a></li>
           </ul>
+          <a style="padding-left: 30px;" href="/"><img src="{{ url_for("static", filename="images/logo.png") }}" /></a>
         </nav>
-        <h3 class="text-muted">Project name</h3>
-      </div>
 
       <div class="jumbotron">
-        <h1>Jumbotron heading</h1>
-        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-        <p><a class="btn btn-lg btn-success" href="index.html#" role="button">Sign up today</a></p>
+        <h1>It's easier with Votr!</h1>
+        <p class="lead">Create free online polls today with Votr</p>
+
+        {% if not session.get('user') %}
+        <p><a class="btn btn-lg btn-success" href="{{ url_for('signup') }}" role="button">Sign up today</a></p>
+        {% else %}
+        <p><a class="btn btn-lg btn-success" href="/polls" role="button">Create a poll</a></p>
+        {% endif %}
       </div>
 
-      <div class="row marketing">
-        <div class="col-lg-6">
-          <h4>Subheading</h4>
-          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+      <div class="container">
 
-          <h4>Subheading</h4>
-          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+        <div class="row marketing">
 
-          <h4>Subheading</h4>
-          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+          {% if not session.get('user') %}
+          <div class="col-lg-6">
+            <h3>It's so easy</h3>
+            <p>It's so easy to use Votr, just create an account and you can start
+            creating polls for the world to see!</p>
+          </div>
+
+          <div class="col-lg-6">
+            <h3 class="form-header">Login</h3>
+            <form method="post" action="{{ url_for('login', next=request.args.get('next')) }}">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+              <div class="form-group has-success">
+                <input type="text" class="form-control" name="username" placeholder="Username" />
+              </div>
+
+              <div class="form-group has-success">
+                <input type="password" class="form-control" name="password" placeholder="Password" />
+              </div>
+
+              <button type="submit" name="submit" class="btn btn-success">Submit</button>
+            </form>
+          </div>
+
+          {% else %}
+            <h2 style="text-align: center;">Latest polls</h2>
+            <div id="container" class="row marketing">
+
+            </div>
+          {% endif %}
         </div>
 
-        <div class="col-lg-6">
-          <h4>Subheading</h4>
-          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
-
-          <h4>Subheading</h4>
-          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
-
-          <h4>Subheading</h4>
-          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
-        </div>
       </div>
 
       <footer class="footer">
-        <p>&copy; 2016 Company, Inc.</p>
+        <p>&copy; 2016 Votr</p>
       </footer>
 
-    </div> <!-- /container -->
-
-
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="{{ url_for('static', filename='js/ie10-viewport-bug-workaround.js') }}"></script>
+    <script src="{{ url_for("static", filename="js/ie10-viewport-bug-workaround.js") }}"></script>
   </body>
 </html>

@@ -1,20 +1,54 @@
-from flask import Flask, render_template, request, flash, session, \
-    redirect, url_for, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+from celery import Celery
+from flask import Flask, render_template, request, flash, session, redirect, \
+    url_for
+from flask import jsonify
+from flask_admin import Admin
 from flask_migrate import Migrate
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from models import db, Users, Topics, Polls, Options
+import config
+from admin import AdminView, TopicView
+from api.api import api
+from models import db, Users, Polls, Topics, Options
+
+
+def make_celery(app):
+    celery = Celery(app.import_name, broker=config.CELERY_BROKER)
+    celery.conf.update(votr.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+
+    return celery
+
 
 votr = Flask(__name__)
 
-# Load config from the config file we created earlier
+votr.register_blueprint(api)
+
+# load config from the config file we created earlier
 votr.config.from_object('config')
 
-# Initialize and create the database
+# create the database
 db.init_app(votr)
 db.create_all(app=votr)
 
 migrate = Migrate(votr, db, render_as_batch=True)
+
+# create celery object
+celery = make_celery(votr)
+
+admin = Admin(votr, name='Dashboard', index_view=TopicView(
+    Topics, db.session, url='/admin', endpoint='admin'))
+admin.add_view(AdminView(Users, db.session))
+admin.add_view(AdminView(Polls, db.session))
+admin.add_view(AdminView(Options, db.session))
 
 
 @votr.route('/')
@@ -96,12 +130,12 @@ def api_poll_vote():
 def signup():
     if request.method == 'POST':
 
-        # Get the user details from the form
+        # get the user details from the form
         email = request.form['email']
         username = request.form['username']
         password = request.form['password']
 
-        # Hash the password
+        # hash the password
         password = generate_password_hash(password)
 
         user = Users(email=email, username=username, password=password)
@@ -113,13 +147,13 @@ def signup():
 
         return redirect(url_for('home'))
 
-    # It's a GET request, just render the template
+    # it's a GET request, just render the template
     return render_template('signup.html')
 
 
 @votr.route('/login', methods=['POST'])
 def login():
-    # We don't need to check the request type as flask will raise a bad request
+    # we don't need to check the request type as flask will raise a bad request
     # error if a request aside from POST is made to this url
 
     username = request.form['username']
@@ -140,7 +174,7 @@ def login():
         # user wasn't found in the database
         flash('Username or password is incorrect please try again', 'error')
 
-    return redirect(url_for('home'))
+    return redirect(request.args.get('next') or url_for('home'))
 
 
 @votr.route('/logout')
@@ -152,3 +186,7 @@ def logout():
 
     return redirect(url_for('home'))
 
+
+@votr.route('/polls/<poll_name>')
+def poll(poll_name):
+    return render_template('index.html')
